@@ -113,7 +113,7 @@ if __name__ == "__main__":
                     for post in posts:
                         process_post(post, year=year, month=month)
 
-        output_filename = "data/exhibitions.json"
+        output_filename = "data/eflux-exhibitions.json"
         with codecs.open(output_filename, 'wb', 'utf-8') as f:
             f.write(json.dumps(exhibitions, ensure_ascii=False, encoding='utf8'))
             print ' *', 'saved %d records to %s' % (len(exhibitions), "data/exhibitions.json")
