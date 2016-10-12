@@ -10,12 +10,13 @@ requests_cache.install_cache(
 
 import os
 from bs4 import BeautifulSoup
-import unicodedata
 import json
 import codecs
 import traceback
 import re
+import urllib
 import sys
+from urlparse import urlparse
 
 month_to_number = {
     "january": 1,
@@ -44,7 +45,7 @@ def mk_record(imgurl, alt, year, month):
         start_date, description = None, None
 
         if parts and 'e-flux' not in title:
-            permalink = parts.pop(-1)
+            permalink = 'http://' + parts.pop(-1)
 
             if len(parts):
                 description = ' / '.join(parts[0:-1])
@@ -78,7 +79,6 @@ def mk_record(imgurl, alt, year, month):
 
                 exhibitions.append(w)
 
-
 def process_post(url, year, month):
     # print ' * fetching post...', url
     page = requests.get(url)
@@ -86,6 +86,13 @@ def process_post(url, year, month):
 
     for article in soup.find_all("article", {'class': 'type-photo'}):
         for img in article.find_all("img"):
+            # find caption a hrefs and decode the redict url
+            a in article.find_all("div", {"class": "caption"}):
+            if a:
+                redirect = urlparse(a["href"])
+
+                urllib.unquote(url).decode('utf8')
+
             mk_record(img['src'], img['alt'], year, month)
 
 
