@@ -16,7 +16,7 @@ import traceback
 import re
 import urllib
 import sys
-from urlparse import urlparse
+import urlparse
 
 month_to_number = {
     "january": 1,
@@ -38,14 +38,14 @@ month_matcher = re.compile(
 
 exhibitions = []
 
-def mk_record(imgurl, alt, year, month):
+def mk_record(imgurl, alt, permalink, year, month):
     if alt:
         parts = [x.strip() for x in alt.split('\n')]
         title = parts.pop(0)
         start_date, description = None, None
 
         if parts and 'e-flux' not in title:
-            permalink = 'http://' + parts.pop(-1)
+            parts.pop(-1)
 
             if len(parts):
                 description = ' / '.join(parts[0:-1])
@@ -87,13 +87,15 @@ def process_post(url, year, month):
     for article in soup.find_all("article", {'class': 'type-photo'}):
         for img in article.find_all("img"):
             # find caption a hrefs and decode the redict url
-            a in article.find_all("div", {"class": "caption"}):
-            if a:
-                redirect = urlparse(a["href"])
-
-                urllib.unquote(url).decode('utf8')
-
-            mk_record(img['src'], img['alt'], year, month)
+            link = None
+            for a in article.find_all("a"):
+                # overwrite, keep only last link
+                if 'redirect?' in a['href']:
+                    link = a["href"]
+            if link:
+                d = urlparse.parse_qs(urlparse.urlsplit(link.decode('utf8')).query)
+                if d and 'z' in d:
+                    mk_record(img['src'], img['alt'], d['z'], year, month)
 
 
 def process_month(year, month):
