@@ -64,9 +64,6 @@ def mk_record(imgurl, alt, permalink, year, month):
             if imgurl and title and permalink:
                 w = {
                     "permalink": permalink,
-                    "object_type": "program",
-                    "object_sub_type": "exhibition",
-                    "organization": "e-flux",
                     "title": title,
                     "image_url": imgurl,
                     "start_date": start_date
