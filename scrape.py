@@ -18,7 +18,11 @@ import urllib
 import sys
 import urlparse
 import datetime
+import unicodedata
 
+def strip_accents(s):
+   return ''.join(c for c in unicodedata.normalize('NFD', s)
+                  if unicodedata.category(c) != 'Mn').lower()
 
 month_to_number = {
     "january": 1,
@@ -40,6 +44,7 @@ month_matcher = re.compile(
 
 exhibitions = []
 
+matched = set([])
 
 def mk_record(imgurl, alt, permalink, year, month):
     if alt:
@@ -49,9 +54,11 @@ def mk_record(imgurl, alt, permalink, year, month):
 
         artist_name = None
 
+
         # scan title for mention of artist name
         for artist in all_artists:
-            if artist.lower() in title.lower():
+            if strip_accents(artist) in strip_accents(title):
+                matched.add(artist)
                 artist_name = artist
 
         if parts and 'e-flux' not in title:
@@ -72,13 +79,13 @@ def mk_record(imgurl, alt, permalink, year, month):
 
             if imgurl and title and permalink:
                 w = {
-                    "permalink": permalink,
-                    "title": title,
-                    "image_url": imgurl
+                    "permalink": permalink.strip(),
+                    "title": title.strip(),
+                    "image_url": imgurl.strip()
                 }
 
                 if start_date:
-                    w["start_date"] = start_date.strftime('%m/%d/%Y'),
+                    w["start_date"] = start_date.strftime('%m/%d/%Y')
                     w["end_date"] = (start_date + datetime.timedelta(days=90)).strftime('%m/%d/%Y')
 
 
@@ -143,6 +150,7 @@ if __name__ == "__main__":
         with codecs.open(output_filename, 'wb', 'utf-8') as f:
             f.write(json.dumps(exhibitions, ensure_ascii=False, encoding='utf8'))
             print ' *', 'saved %d records to %s' % (len(exhibitions), output_filename)
+            print ' *', 'matched %d artist names' % (len(matched))
 
     except Exception, e:
         traceback.print_exc()
